@@ -10,5 +10,10 @@ namespace WhatsGoodApi.Models
         public virtual User? User { get; set; }
         public int FriendId { get; set; }
         public virtual User? Friend { get; set; }
+        public Friendship(int userId, int friendId)
+        {
+            UserId = userId;
+            FriendId = friendId;
+        }
     }
 }

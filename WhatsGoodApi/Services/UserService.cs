@@ -93,18 +93,32 @@ namespace WhatsGoodApi.Services
         {
             if (username == null)
             {
-                throw new Exception("Type username for searching!");
+                throw new Exception("Search is null!");
             }
 
             if (ownerUsername == null)
             {
-                throw new Exception("Missing username who searching!");
+                throw new Exception("Missing username who's searching!");
             }
 
             var users = await this._unitOfWork.User.GetUsersByUsername(username, ownerUsername);
             return users;
         }
+        public async Task<User> GetUserByUsername(string username)
+        {
+            if (username != null)
+            {
+                var user = await this._unitOfWork.User.GetUserByUsername(username);
+                return user;
+            }
+            throw new ArgumentNullException(nameof(username), "Username cannot be null.");
+        }
 
-    
+        public async Task<User> GetUserByUserId(int userId)
+        {
+            var user = await this._unitOfWork.User.GetUserById(userId);
+            return user;
+        }
+
     }
 }

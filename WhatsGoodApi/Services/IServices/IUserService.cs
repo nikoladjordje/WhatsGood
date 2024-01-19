@@ -10,6 +10,7 @@ namespace WhatsGoodApi.Services.IServices
         Task UpdateProfile(UserUpdateDTO user);
         Task<User> GetUser(string jwt);
         Task<IQueryable<User>> Search(string username, string ownerUsername);
-    
+        Task<User> GetUserByUsername(string username);
+        Task<User> GetUserByUserId(int userId);
     }
 }

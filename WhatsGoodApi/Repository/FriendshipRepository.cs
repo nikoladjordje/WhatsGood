@@ -13,7 +13,7 @@ namespace WhatsGoodApi.Repository
             _db = db;
 
         }
-        public async Task<List<Friendship>> GetFriendshipByUser(int UserId)
+        public async Task<List<Friendship>> GetFriendshipsByUser(int UserId)
         {
             var friends = await _db.Friendships.Include(x => x.Friend).Where(x => x.UserId == UserId).ToListAsync();
             return friends;

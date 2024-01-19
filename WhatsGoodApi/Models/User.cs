@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Azure.Core;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace WhatsGoodApi.Models
@@ -26,5 +27,9 @@ namespace WhatsGoodApi.Models
         public virtual ICollection<Message> SenderLists { get; set; }
         [JsonIgnore]
         public virtual ICollection<Message> RecipientLists { get; set; }
+        [JsonIgnore]
+        public virtual ICollection<FriendRequest> SenderRequests { get; set; }
+        [JsonIgnore]
+        public virtual ICollection<FriendRequest> RecipientRequests { get; set; }
     }
 }

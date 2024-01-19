@@ -21,8 +21,6 @@ namespace WhatsGoodApi.Controllers
             _messageService = new MessageService(db);
         }
 
-
-
         [Route("GetAllMessages")]
         [HttpGet]
         public async Task<ActionResult<List<Message>>> GetAllMessages(int senderId, int recipientId)

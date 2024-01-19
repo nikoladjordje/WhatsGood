@@ -4,7 +4,7 @@ namespace WhatsGoodApi.Repository.IRepository
 {
     public interface IFriendshipRepository : IRepository<Friendship>
     {
-        Task<List<Friendship>> GetFriendshipByUser(int UserId);
+        Task<List<Friendship>> GetFriendshipsByUser(int UserId);
         Task<Friendship> GetFriendshipByUserAndFriend(int UserId, int FriendId);
     }
 }
