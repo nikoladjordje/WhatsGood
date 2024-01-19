@@ -104,5 +104,7 @@ namespace WhatsGoodApi.Services
             var users = await this._unitOfWork.User.GetUsersByUsername(username, ownerUsername);
             return users;
         }
+
+    
     }
 }
