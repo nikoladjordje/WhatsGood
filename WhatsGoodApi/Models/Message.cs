@@ -16,5 +16,12 @@ namespace WhatsGoodApi.Models
         [Required]
         public int RecipientId { get; set; }
         public virtual User? Recipient { get; set; }
+        public Message(int senderId, int recipientId, string content, DateTime timestamp)
+        {
+            SenderId = senderId;
+            RecipientId = recipientId;
+            Content = content;
+            Timestamp = timestamp;
+        }
     }
 }
