@@ -1,4 +1,5 @@
 ﻿using Azure.Core;
+using Microsoft.Extensions.Logging.Abstractions;
 using WhatsGoodApi.DTOs;
 using WhatsGoodApi.Models;
 using WhatsGoodApi.Services.IServices;
@@ -10,12 +11,12 @@ namespace WhatsGoodApi.Services
     public class FriendRequestService : IFriendRequestService
     {
         private readonly WhatsGoodDbContext _db;
-        public UnitOfWork _unitOfWork { get; set; }
+        public IUnitOfWork _unitOfWork { get; set; }
 
-        public FriendRequestService(WhatsGoodDbContext db)
+        public FriendRequestService(WhatsGoodDbContext db, IUnitOfWork unitOfWork)
         {
             this._db = db;
-            this._unitOfWork = new UnitOfWork(db);
+            this._unitOfWork = unitOfWork;
         }
 
         public async Task SendFriendRequest(FriendRequestDTO request)
@@ -29,31 +30,45 @@ namespace WhatsGoodApi.Services
                 }
 
                 var requestCreated = new FriendRequest(request.SenderId, request.RecipientId, request.IsAccepted, request.Timestamp);
-                await _unitOfWork.FriendRequest.Add(requestCreated);
+                await _unitOfWork.FriendRequest.SendFriendRequest(requestCreated);
                 await _unitOfWork.Save();
 
             }
         }
-        public async Task AcceptFriendRequest(int requestId)
+        public async Task<FriendRequest> AcceptFriendRequest(int requestId, int userId)
         {
-            var request = await this._unitOfWork.FriendRequest.GetFriendRequestById(requestId);
+            var request = await this._unitOfWork.FriendRequest.GetFriendRequestById(requestId, userId);
+
             if (request == null)
             {
                 throw new Exception("No such friend request");
             }
-            request.IsAccepted = true;
-            _unitOfWork.FriendRequest.Update(request);
-            await _unitOfWork.Save();
+
+            var friendRequestAccepted = await this._unitOfWork.FriendRequest.AcceptFriendRequest(request);
+            try
+            {
+                this._unitOfWork.FriendRequest.Update(friendRequestAccepted);
+                friendRequestAccepted.Sender = null;
+                friendRequestAccepted.Recipient = null;
+                await _unitOfWork.Save();
+                
+            }
+            catch(Exception e)
+            {
+
+            }
+            return request;
         }
 
-        public async Task DeclineFriendRequest(int requestId)
+        public async Task DeclineFriendRequest(int requestId, int userId)
         {
-            var request = await this._unitOfWork.FriendRequest.GetFriendRequestById(requestId);
+            var request = await this._unitOfWork.FriendRequest.GetFriendRequestById(requestId, userId);
             if (request == null)
             {
                 throw new Exception("No such friend request");
             }
-            _unitOfWork.FriendRequest.Delete(request);
+            this._unitOfWork.FriendRequest.DeclineFriendRequest(request);
+            //_unitOfWork.FriendRequest.Delete(request);
             await _unitOfWork.Save();
         }
 
@@ -62,18 +77,23 @@ namespace WhatsGoodApi.Services
             List<FriendRequest> friends = await this._unitOfWork.FriendRequest.GetFriendRequestsByUser(UserId);
             return friends;
         }
-        public async Task<bool> CheckIfFriendRequestSent(string UserName, string FriendName)
+        public async Task<bool> CheckIfFriendRequestSent(int UserId, int FriendId)
         {
-            var friend1 = await this._unitOfWork.User.GetUserByUsername(UserName);
-            var friend2 = await this._unitOfWork.User.GetUserByUsername(FriendName);
-            if (friend1 == null || friend2 == null)
+            List<FriendRequest> userReqs = await this._unitOfWork.FriendRequest.GetFriendRequestsByUser(UserId);
+            foreach(FriendRequest userReq in userReqs)
             {
-                return false;
+                if (userReq.RecipientId == FriendId)
+                    return true;
             }
-            var friendsList = await this._unitOfWork.FriendRequest.GetFriendRequestBySenderAndRecipient(friend1.ID, friend2.ID);
-            if (friendsList == null)
-                return false;
-            return true;
+            List<FriendRequest> friendReqs = await this._unitOfWork.FriendRequest.GetFriendRequestsByUser(FriendId);
+            foreach (FriendRequest friendReq in friendReqs)
+            {
+                if (friendReq.RecipientId == UserId)
+                    return true;
+            }
+
+            //var friendsList = await this._unitOfWork.FriendRequest.GetFriendRequestBySenderAndRecipient(UserId, FriendId);
+            return false;
         }
     }
 }

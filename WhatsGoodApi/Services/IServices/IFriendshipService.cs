@@ -4,8 +4,8 @@ namespace WhatsGoodApi.Services.IServices
 {
     public interface IFriendshipService
     {
-        Task CreateFriendship(int requestId);
-        Task<List<Friendship>> GetAllFriendsForUser(int UserId);
+        Task CreateFriendship(FriendRequest request, int userId);
+        Task<List<User>> GetAllFriendsForUser(int UserId);
         Task<bool> CheckIfFriends(string UserName, string FriendName);
     }
 }

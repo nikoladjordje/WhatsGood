@@ -8,16 +8,15 @@ namespace WhatsGoodApi.Services
     public class FriendshipService : IFriendshipService
     {
         private readonly WhatsGoodDbContext _db;
-        public UnitOfWork _unitOfWork { get; set; }
+        public IUnitOfWork _unitOfWork { get; set; }
 
-        public FriendshipService(WhatsGoodDbContext db)
+        public FriendshipService(WhatsGoodDbContext db, IUnitOfWork unitOfWork)
         {
             this._db = db;
-            this._unitOfWork = new UnitOfWork(db);
+            this._unitOfWork = unitOfWork;
         }
-        public async Task CreateFriendship(int requestId)
+        public async Task CreateFriendship(FriendRequest request, int userId)
         {
-            var request = await this._unitOfWork.FriendRequest.GetFriendRequestById(requestId);
             if (request != null)
             {
                 var friendsList = await this._unitOfWork.Friendship.GetFriendshipByUserAndFriend(request.SenderId, request.RecipientId);
@@ -25,6 +24,7 @@ namespace WhatsGoodApi.Services
                 {
                     var friendslistCreated1 = new Friendship(request.SenderId, request.RecipientId);
                     var friendslistCreated2 = new Friendship(request.RecipientId, request.SenderId);
+
                     await _unitOfWork.Friendship.Add(friendslistCreated1);
                     await _unitOfWork.Friendship.Add(friendslistCreated2);
                     await _unitOfWork.Save();
@@ -33,9 +33,9 @@ namespace WhatsGoodApi.Services
             }
         }
 
-        public async Task<List<Friendship>> GetAllFriendsForUser(int UserId)
+        public async Task<List<User>> GetAllFriendsForUser(int UserId)
         {
-            List<Friendship> friends = await this._unitOfWork.Friendship.GetFriendshipsByUser(UserId);
+            List<User> friends = await this._unitOfWork.Friendship.GetFriendsForUser(UserId);
             return friends;
         }
 

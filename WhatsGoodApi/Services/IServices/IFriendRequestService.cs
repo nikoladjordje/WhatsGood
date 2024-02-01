@@ -6,9 +6,9 @@ namespace WhatsGoodApi.Services.IServices
     public interface IFriendRequestService
     {
         Task SendFriendRequest(FriendRequestDTO request);
-        Task AcceptFriendRequest(int requestId);
-        Task DeclineFriendRequest(int requestId);
-        Task<bool> CheckIfFriendRequestSent(string UserName, string FriendName);
+        Task<FriendRequest> AcceptFriendRequest(int requestId, int userId);
+        Task DeclineFriendRequest(int requestId, int userId);
+        Task<bool> CheckIfFriendRequestSent(int UserId, int FriendId);
         Task<List<FriendRequest>> GetAllFriendRequestsForUser(int UserId);
     }
 }

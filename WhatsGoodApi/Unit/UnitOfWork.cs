@@ -1,6 +1,7 @@
 ﻿using WhatsGoodApi.Repository.IRepository;
 using WhatsGoodApi.Repository;
 using WhatsGoodApi.WGDbContext;
+using StackExchange.Redis;
 
 namespace WhatsGoodApi.Unit
 {
@@ -11,13 +12,15 @@ namespace WhatsGoodApi.Unit
         public IUserRepository User { get; private set; }
         public IFriendshipRepository Friendship { get; private set; }
         public IFriendRequestRepository FriendRequest { get; set; }
-        public UnitOfWork (WhatsGoodDbContext context)
+        private readonly IConnectionMultiplexer _redis;
+        public UnitOfWork (WhatsGoodDbContext context, IConnectionMultiplexer redis)
         {
             _context = context;
-            Message = new MessageRepository(_context);
-            User = new UserRepository(_context);
-            Friendship = new FriendshipRepository(_context);
-            FriendRequest = new FriendRequestRepository(_context);
+            _redis = redis;
+            Message = new MessageRepository(_context, _redis);
+            User = new UserRepository(_context,_redis);
+            Friendship = new FriendshipRepository(_context, _redis);
+            FriendRequest = new FriendRequestRepository(_context, _redis);
         }
         public async Task Save()
         {

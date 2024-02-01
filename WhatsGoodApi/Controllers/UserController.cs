@@ -13,10 +13,10 @@ public class UserController : ControllerBase
     private readonly WhatsGoodDbContext _db;
     public IUserService _userService { get; set; }
 
-    public UserController(WhatsGoodDbContext db)
+    public UserController(WhatsGoodDbContext db, IUserService userService)
     {
         this._db = db;
-        _userService = new UserService(db);
+        _userService = userService;
     }
 
         [Route("Register")]
@@ -110,5 +110,21 @@ public class UserController : ControllerBase
             }
         }
 
-    
+        [Route("GetUserById/{userId}")]
+        [HttpGet]
+        public async Task<IActionResult> GetUserById(int userId)
+        {
+            try
+            {
+                var user = await this._userService.GetUserById(userId);
+
+                return Ok(user);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+
 }

@@ -10,13 +10,13 @@ namespace WhatsGoodApi.Services
     public class UserService : IUserService
     {
         private readonly WhatsGoodDbContext _db;
-        public UnitOfWork _unitOfWork { get; set; }
+        public IUnitOfWork _unitOfWork { get; set; }
         private JwtService jwtService { get; set; }
 
-        public UserService(WhatsGoodDbContext db)
+        public UserService(WhatsGoodDbContext db, IUnitOfWork unitOfWork)
         {
             this._db = db;
-            this._unitOfWork = new UnitOfWork(db);
+            this._unitOfWork = unitOfWork;
             jwtService = new JwtService();
         }
 
@@ -74,9 +74,8 @@ namespace WhatsGoodApi.Services
                 userFound.LastName = user.LastName;
                 userFound.Username = user.Username;
                 userFound.Email = user.Email;
-                userFound.Password = user.Password;
-                this._unitOfWork.User.Update(userFound);
-                await this._unitOfWork.Save();
+                await this._unitOfWork.User.UpdateUser(userFound);
+                //await this._unitOfWork.Save();
             }
         }
         public async Task<User> GetUser(string jwt)
@@ -114,8 +113,9 @@ namespace WhatsGoodApi.Services
             throw new ArgumentNullException(nameof(username), "Username cannot be null.");
         }
 
-        public async Task<User> GetUserByUserId(int userId)
+        public async Task<User> GetUserById(int userId)
         {
+
             var user = await this._unitOfWork.User.GetUserById(userId);
             return user;
         }

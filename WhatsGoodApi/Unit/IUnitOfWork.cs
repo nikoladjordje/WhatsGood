@@ -7,6 +7,7 @@ namespace WhatsGoodApi.Unit
         IUserRepository User { get; }
         IMessageRepository Message { get; }
         IFriendshipRepository Friendship { get; }
+        IFriendRequestRepository FriendRequest { get; }
         Task Save();
     }
 }

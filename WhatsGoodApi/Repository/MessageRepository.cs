@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 using WhatsGoodApi.Models;
 using WhatsGoodApi.Repository.IRepository;
 using WhatsGoodApi.WGDbContext;
@@ -8,10 +9,11 @@ namespace WhatsGoodApi.Repository
     public class MessageRepository : Repository<Message>, IMessageRepository
     {
         private WhatsGoodDbContext _db;
-        public MessageRepository(WhatsGoodDbContext db) : base(db)
+        private readonly IConnectionMultiplexer _redis;
+        public MessageRepository(WhatsGoodDbContext db, IConnectionMultiplexer redis) : base(db)
         {
             _db = db;
-
+            _redis = redis;      
         }
         public async Task<List<Message>> GetMessagesBySenderAndRecipient(int SenderId, int RecipientId)
         {

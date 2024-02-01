@@ -8,7 +8,7 @@ using WhatsGoodApi.Models;
 
 namespace WhatsGoodApi.Controllers
 {
-    [Route("Message")]
+    [Route("FriendRequest")]
     [ApiController]
     public class FriendRequestController : ControllerBase
     {
@@ -18,13 +18,13 @@ namespace WhatsGoodApi.Controllers
         public IFriendshipService _friendshipService { get; set; }
         public IUserService _userService { get; set; }
 
-        public FriendRequestController(WhatsGoodDbContext db)
+        public FriendRequestController(WhatsGoodDbContext db, IMessageService messageService, IFriendRequestService friendRequestService, IFriendshipService friendshipService, IUserService userService)
         {
             this._db = db;
-            _messageService = new MessageService(db);
-            _friendRequestService = new FriendRequestService(db);
-            _friendshipService = new FriendshipService(db);
-            _userService = new UserService(db);
+            _messageService = messageService;
+            _friendRequestService = friendRequestService;
+            _friendshipService = friendshipService;
+            _userService = userService;
         }
 
         [Route("SendFriendRequest/{username}/{friendUsername}")]
@@ -45,6 +45,9 @@ namespace WhatsGoodApi.Controllers
                         IsAccepted = false,
                         Timestamp = DateTime.Now
                     };
+
+                    
+
                     await this._friendRequestService.SendFriendRequest(request);
                     return Ok(request);
                 }
@@ -59,12 +62,12 @@ namespace WhatsGoodApi.Controllers
 
         [Route("AcceptFriendRequest")]
         [HttpPost]
-        public async Task<IActionResult> AcceptFriendRequest(int requestId)
+        public async Task<IActionResult> AcceptFriendRequest(int requestId, int userId)
         {
             try
             {
-                await this._friendRequestService.AcceptFriendRequest(requestId);
-                await this._friendshipService.CreateFriendship(requestId);
+                FriendRequest request = await this._friendRequestService.AcceptFriendRequest(requestId, userId);
+                await this._friendshipService.CreateFriendship(request, userId);
                 return Ok(requestId);
             }
             catch (Exception e)
@@ -75,11 +78,11 @@ namespace WhatsGoodApi.Controllers
 
         [Route("DeclineFriendRequest")]
         [HttpPost]
-        public async Task<IActionResult> DeclineFriendRequest(int requestId)
+        public async Task<IActionResult> DeclineFriendRequest(int requestId, int userId)
         {
             try
             {
-                await this._friendRequestService.DeclineFriendRequest(requestId);
+                await this._friendRequestService.DeclineFriendRequest(requestId, userId);
 
                 return Ok(requestId);
             }
@@ -98,11 +101,13 @@ namespace WhatsGoodApi.Controllers
             {
 
                 List<FriendRequest> requests = await this._friendRequestService.GetAllFriendRequestsForUser(friend1.ID);
+                List<FriendRequest> reqs = new List<FriendRequest>();
                 foreach (FriendRequest req in requests)
                 {
-                    req.Sender = await this._userService.GetUserByUserId(req.SenderId);
+                    req.Sender = await this._userService.GetUserById(req.SenderId);
+                    reqs.Add(req);
                 }
-                return Ok(requests);
+                return Ok(reqs);
             }
             catch (Exception e)
             {
@@ -110,13 +115,14 @@ namespace WhatsGoodApi.Controllers
             }
         }
 
-        [Route("CheckIfFriendRequestSent/{UserName}/{FriendName}")]
+        [Route("CheckIfFriendRequestSent")]
         [HttpGet]
-        public async Task<IActionResult> CheckIfFriendRequestSent(string UserName, string FriendName)
+        public async Task<IActionResult> CheckIfFriendRequestSent(int UserId, int FriendId)
         {
             try
             {
-                bool friends = await this._friendRequestService.CheckIfFriendRequestSent(UserName, FriendName);
+                bool friends = await this._friendRequestService.CheckIfFriendRequestSent(UserId, FriendId);
+
 
                 return Ok(friends);
             }

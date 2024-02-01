@@ -10,12 +10,12 @@ namespace WhatsGoodApi.Services
     public class MessageService : IMessageService
     {
         private readonly WhatsGoodDbContext _db;
-        public UnitOfWork _unitOfWork { get; set; }
+        public IUnitOfWork _unitOfWork { get; set; }
 
-        public MessageService(WhatsGoodDbContext db)
+        public MessageService(WhatsGoodDbContext db, IUnitOfWork unitOfWork)
         {
             this._db = db;
-            this._unitOfWork = new UnitOfWork(db);
+            this._unitOfWork = unitOfWork;
         }
 
         public async Task SendMessage(MessageDTO message)
